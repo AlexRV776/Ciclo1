@@ -6,23 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('usuarios', function (Blueprint $table) {
-            $table->string('estado')->default('pendiente')->after('rol_id');
+            // Solo agregar si la columna no existe
+            if (!Schema::hasColumn('usuarios', 'estado')) {
+                $table->string('estado')->default('pendiente');
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('usuarios', function (Blueprint $table) {
-            $table->dropColumn('estado');
+            if (Schema::hasColumn('usuarios', 'estado')) {
+                $table->dropColumn('estado');
+            }
         });
     }
 };

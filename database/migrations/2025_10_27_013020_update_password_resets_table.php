@@ -12,9 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('password_resets', function (Blueprint $table) {
-            $table->string('correo')->index(); // 👈 usamos 'correo' en lugar de 'email'
-            $table->string('token');
-        });
+    if (!Schema::hasColumn('password_resets', 'correo')) {
+        $table->string('correo')->unique();
+    }
+});
+
     }
 
     /**
