@@ -17,6 +17,12 @@ return new class extends Migration
             $table->foreignId('horario_id')->constrained('horario')->onDelete('cascade');
             $table->foreignId('grupo_materia_id')->constrained('grupo_materia')->onDelete('cascade');
 
+            $table->integer('nro');
+            $table->foreign('nro')
+                ->references('nro')
+                ->on('aulas')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
             $table->timestamps();
         });
     }

@@ -24,7 +24,7 @@
             <label for="dia" class="block text-gray-700 font-semibold mb-1">Día:</label>
             <select name="dia" id="dia" class="border border-gray-300 rounded-lg w-full p-2" required>
                 @php
-                    $dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+                    $dias = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
                 @endphp
                 @foreach($dias as $dia)
                     <option value="{{ $dia }}" {{ $horario->dia == $dia ? 'selected' : '' }}>{{ $dia }}</option>

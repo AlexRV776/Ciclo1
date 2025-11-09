@@ -48,4 +48,9 @@ class Usuario extends Authenticatable
     {
         return $this->rol && $this->rol->permisos->contains('nombre', $nombrePermiso);
     }
+        // ✅ RELACIÓN CLAVE: permite acceder al perfil docente
+    public function docente()
+    {
+        return $this->hasOne(Docente::class, 'registro', 'registro');
+    }
 }

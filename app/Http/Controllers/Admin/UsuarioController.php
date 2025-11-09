@@ -43,7 +43,7 @@ class UsuarioController extends Controller
             return view('usuario.form_docente', compact('usuario'));
         }
 
-        return redirect()->route('admin.usuario.index')->with('success', 'Rol asignado correctamente.');
+        return redirect()->route('admin.dashboard')->with('success', 'Rol asignado correctamente.');
     }
     public function panel()
     {

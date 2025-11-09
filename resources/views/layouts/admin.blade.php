@@ -14,7 +14,7 @@
         </div>
         <nav class="p-4 space-y-2">
             <a href="{{ route('admin.dashboard') }}" class="block p-2 hover:bg-gray-700 rounded">🏠 Inicio</a>
-            <a href="{{ route('admin.usuarios') }}" class="block p-2 hover:bg-gray-700 rounded">👥 Usuarios</a>
+            <a href="{{ route('admin.usuarios.index') }}" class="block p-2 hover:bg-gray-700 rounded">👥 Usuarios</a>
             <a href="{{ route('admin.docentes') }}" class="block p-2 hover:bg-gray-700 rounded">🎓 Docentes</a>
             <a href="{{ route('admin.horarios') }}" class="block p-2 hover:bg-gray-700 rounded">🕒 Horarios</a>
             <a href="{{ route('admin.grupos') }}" class="block p-2 hover:bg-gray-700 rounded">🏫 Grupos</a>

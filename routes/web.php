@@ -8,10 +8,11 @@ use App\Http\Controllers\Admin\DocenteController;
 use App\Http\Controllers\Admin\HorarioController;
 use App\Http\Controllers\Admin\GrupoController;
 use App\Http\Controllers\Admin\MateriaController;
-use App\Http\Controllers\Admin\AsistenciaController;
+use App\Http\Controllers\AsistenciaController;
 use App\Http\Controllers\Admin\AulaController;
 use App\Http\Controllers\Admin\RolController;
 use App\Http\Controllers\Admin\PermisoController;
+use App\Http\Controllers\Admin\HorarioMateriaController;
 use Illuminate\Support\Facades\Auth;
 /*
 |--------------------------------------------------------------------------
@@ -117,8 +118,46 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // 🧑‍🏫 Guardar datos del docente (solo admin)
     Route::post('/usuarios/{usuario}/docente', [UsuarioController::class, 'guardarDocenteAdmin'])
         ->name('admin.docente.guardar');
+        
 });
-// Dashboard (si lo tienes)
-//Route::get('/dashboard', function () {
-//   return view('dashboard');
-//})->name('dashboard');
+
+Route::prefix('admin')->middleware('auth')->group(function () {
+    Route::resource('grupo_materia', App\Http\Controllers\Admin\GrupoMateriaController::class)
+        ->names('admin.grupo_materia');
+});
+
+Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
+    Route::resource('horario_materia', App\Http\Controllers\Admin\HorarioMateriaController::class);
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/asistencia', [AsistenciaController::class, 'index'])->name('asistencia.index');
+    Route::get('/asistencia/marcar/{id}', [AsistenciaController::class, 'marcar'])->name('asistencia.marcar');
+    Route::post('/asistencia/guardar/{id}', [AsistenciaController::class, 'guardar'])->name('asistencia.guardar');
+
+});
+
+use App\Http\Controllers\PerfilController;
+
+Route::middleware('auth')->group(function () {
+    Route::get('/perfil', [PerfilController::class, 'edit'])->name('perfil.edit');
+    Route::post('/perfil', [PerfilController::class, 'update'])->name('perfil.update');
+});
+
+use App\Http\Controllers\ReservaAulaController;
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/reservas', [ReservaAulaController::class, 'index'])->name('reservas.index');
+
+    Route::post('/reservas/disponibles', [ReservaAulaController::class, 'disponibles'])->name('reservas.disponibles');
+
+    // ✅ NUEVO: formulario de confirmación
+    Route::post('/reservas/confirmar', [ReservaAulaController::class, 'confirmar'])
+        ->name('reservas.confirmar');
+    Route::get('/reservas/confirmar', function () {
+        return redirect()->route('reservas.index');
+    });
+    Route::post('/reservas/crear', [ReservaAulaController::class, 'reservar'])->name('reservas.crear');
+});

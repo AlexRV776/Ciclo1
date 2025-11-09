@@ -23,13 +23,13 @@
             <label for="dia" class="block text-gray-700 font-semibold mb-1">Día:</label>
             <select name="dia" id="dia" class="border border-gray-300 rounded-lg w-full p-2" required>
                 <option value="">Seleccionar día</option>
-                <option value="Lunes">Lunes</option>
-                <option value="Martes">Martes</option>
-                <option value="Miércoles">Miércoles</option>
-                <option value="Jueves">Jueves</option>
-                <option value="Viernes">Viernes</option>
-                <option value="Sábado">Sábado</option>
-                <option value="Domingo">Domingo</option>
+                <option value="lunes">lunes</option>
+                <option value="martes">martes</option>
+                <option value="miercoles">miercoles</option>
+                <option value="jueves">jueves</option>
+                <option value="viernes">viernes</option>
+                <option value="sabado">sabado</option>
+                <option value="domingo">domingo</option>
             </select>
         </div>
 

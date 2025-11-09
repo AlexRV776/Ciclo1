@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Aula;
+use App\Models\HorarioMateria;
+use App\Models\ReservaAula;
 
 class AulaController extends Controller
 {
@@ -64,5 +66,62 @@ class AulaController extends Controller
         $aula->delete();
 
         return redirect()->route('admin.aulas.index')->with('success', 'Aula eliminada correctamente.');
+    }
+
+    public function disponibles(Request $request)
+    {
+        $dia = $request->input('dia', 'Lunes');
+        $hora_inicio = $request->input('hora_inicio', '08:00:00');
+        $hora_fin = $request->input('hora_fin', '09:00:00');
+
+        $aulasOcupadasHM = HorarioMateria::whereHas('horario', function($q) use ($dia, $hora_inicio, $hora_fin) {
+            $q->where('dia', $dia)
+            ->where(function($query) use ($hora_inicio, $hora_fin) {
+                $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
+                        ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin]);
+            });
+        })->pluck('nro');
+
+        $aulasOcupadasReserva = ReservaAula::where('dia', $dia)
+            ->where('estado', '!=', 'rechazado')
+            ->where(function($query) use ($hora_inicio, $hora_fin) {
+                $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
+                    ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin]);
+            })
+            ->pluck('aula_nro');
+
+        $aulasLibres = Aula::whereNotIn('nro', $aulasOcupadasHM)
+            ->whereNotIn('nro', $aulasOcupadasReserva)
+            ->get();
+
+        return view('admin.aulas.disponibles', compact('aulasLibres', 'dia', 'hora_inicio', 'hora_fin'));
+    }
+    public function aulasLibres(Request $request)
+    {
+        $dia = $request->input('dia', 'Lunes');
+        $hora_inicio = $request->input('hora_inicio', '10:00:00');
+        $hora_fin = $request->input('hora_fin', '11:00:00');
+
+        $aulasOcupadasHM = HorarioMateria::whereHas('horario', function($q) use ($dia, $hora_inicio, $hora_fin) {
+            $q->where('dia', $dia)
+            ->where(function($query) use ($hora_inicio, $hora_fin) {
+                $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
+                        ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin]);
+            });
+        })->pluck('nro');
+
+        $aulasOcupadasReserva = ReservaAula::where('dia', $dia)
+            ->where('estado', '!=', 'rechazado')
+            ->where(function($query) use ($hora_inicio, $hora_fin) {
+                $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
+                    ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin]);
+            })
+            ->pluck('aula_nro');
+
+        $aulasLibres = Aula::whereNotIn('nro', $aulasOcupadasHM)
+            ->whereNotIn('nro', $aulasOcupadasReserva)
+            ->get();
+
+        return view('admin.aulas.libres', compact('aulasLibres', 'dia', 'hora_inicio', 'hora_fin'));
     }
 }

@@ -17,6 +17,14 @@ return new class extends Migration
             $table->foreignId('grupo_id')->constrained('grupo')->onDelete('cascade');
             $table->string('materia_sigla', 10);
             $table->foreign('materia_sigla')->references('sigla')->on('materia')->onDelete('cascade');
+            // 👇 Primero defines la columna
+            $table->integer('docente_registro');
+            // ✅ FOREIGN KEY A DOCENTE
+            $table->foreign('docente_registro')
+                ->references('registro')
+                ->on('docente')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
 
             $table->timestamps();
         });
