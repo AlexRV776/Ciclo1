@@ -14,6 +14,7 @@ class PermisoSeeder extends Seeder
             'ver_horarios',
             'gestionar_asistencias',
             'ver_aulas',
+            'ver_reportes_personal',
         ];
 
         foreach ($permisos as $permiso) {

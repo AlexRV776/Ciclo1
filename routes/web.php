@@ -118,7 +118,8 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // 🧑‍🏫 Guardar datos del docente (solo admin)
     Route::post('/usuarios/{usuario}/docente', [UsuarioController::class, 'guardarDocenteAdmin'])
         ->name('admin.docente.guardar');
-        
+
+
 });
 
 Route::prefix('admin')->middleware('auth')->group(function () {
@@ -160,4 +161,15 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('reservas.index');
     });
     Route::post('/reservas/crear', [ReservaAulaController::class, 'reservar'])->name('reservas.crear');
+
 });
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/admin/reportes/personal', [App\Http\Controllers\ReporteController::class, 'personal'])
+        ->name('admin.reportes.personal');
+
+    Route::post('/admin/reportes/personal/export', [App\Http\Controllers\ReporteController::class, 'exportPersonal'])
+        ->name('admin.reportes.personal.export');
+
+});
+

@@ -53,7 +53,7 @@
                     <p class="mt-2 font-semibold">{{ Auth::user()->nombre }}</p>
                     <p class="text-sm text-gray-300">{{ Auth::user()->correo }}</p>
                     <p class="text-xs text-gray-400 mt-1">
-                        Rol: {{ Auth::user()->rol->nombre }}
+                        Rol: {{ Auth::user()->rol->nombre ?? 'Sin definir' }}
                     </p>
                 </div>
 
@@ -147,6 +147,13 @@
                     </a>
                 @endif
 
+                {{-- ✅ PERMISO: ver_reportes_personal --}}
+                @if(Auth::user()->rol->permisos->contains('nombre', 'ver_reportes_personal'))
+                    <a href="{{ route('admin.reportes.personal') }}" 
+                    class="block py-2 px-3 rounded-lg hover:bg-gray-800 transition">
+                        📄 Reporte de Personal
+                    </a>
+                @endif
             </nav>
         @endif
         @endauth
@@ -160,7 +167,6 @@
             <a href="{{ route('admin.materias.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">📘 Materias</a>
             <a href="{{ route('admin.grupos.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">👥 Grupos</a>
             <a href="{{ route('admin.aulas.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">🏫 Aulas</a>
-            <a class="block py-2 px-3 rounded-lg hover:bg-gray-800">👨‍🏫 Docentes</a>
             <a href="{{ route('admin.bitacora') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">📜 Bitácora</a>
             <a href="{{ route('admin.horario.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">🕒 Horario</a>
             <a href="{{ route('admin.grupo_materia.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">➕ Asignar Materia a Grupo</a>
