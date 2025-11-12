@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('fecha_contrato');
             $table->string('especialidad', 100);
             $table->decimal('sueldo', 10, 2);
-
+            $table->integer('carga_horaria_max')->default(40);    
             // ✅ Relación 1 a 1 con usuario
             $table->foreign('registro')
                 ->references('registro')

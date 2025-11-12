@@ -22,11 +22,6 @@ class RolesSeeder extends Seeder
                 ['descripcion' => $rolData['descripcion']] // valores
             );
 
-            // ✅ Asignar todos los permisos al rol Administrador
-            if ($rol->nombre === 'Administrador') {
-                $permisos = Permiso::all(); // todos los permisos existentes
-                $rol->permisos()->sync($permisos->pluck('id'));
-            }
         }
     }
 }

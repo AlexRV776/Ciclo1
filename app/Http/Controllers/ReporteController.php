@@ -9,6 +9,7 @@ use App\Models\Docente;
 use Barryvdh\DomPDF\Facade\Pdf;// si usas barryvdh/laravel-dompdf
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
+use App\Imports\MaestrosOfertaImport;
 
 class ReporteController extends Controller
 {
@@ -115,5 +116,15 @@ class ReporteController extends Controller
         }
 
         return back()->with('error', 'Tipo de reporte no válido');
+    }
+    public function importarOferta(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|file|mimes:xlsx,xls'
+        ]);
+
+        Excel::import(new MaestrosOfertaImport, $request->file('archivo'));
+
+        return back()->with('success', 'Oferta académica importada correctamente.');
     }
 }

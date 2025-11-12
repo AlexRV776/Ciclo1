@@ -24,6 +24,9 @@ class PermisoSeeder extends Seeder
             'gestionar_usuarios',
             'gestionar_asistencias',
             'ver_reportes',
+            'importar_usuarios_excel',
+            'ver_calendario',
+            'importar_oferta',
         ];
 
         foreach ($permisos as $permiso) {

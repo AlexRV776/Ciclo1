@@ -14,7 +14,6 @@ class ReservaAulaController extends Controller
     public function index()
     {
         $docente = Auth::user()->docente;
-
         return view('reservas.index', compact('docente'));
     }
 
@@ -22,53 +21,78 @@ class ReservaAulaController extends Controller
     {
         $request->validate([
             'fecha' => 'required|date',
-            'hora_inicio' => 'required',
-            'hora_fin' => 'required'
+            'hora_inicio' => 'required|date_format:H:i',
+            'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
         ]);
 
         $fecha = $request->fecha;
         $inicio = $request->hora_inicio;
         $fin = $request->hora_fin;
 
-        // Obtener día de la semana en texto EXACTO igual que en tu BD
-        $dia = ucfirst(strtolower(\Carbon\Carbon::parse($fecha)->locale('es')->dayName));
+        // Día en lowercase, tal como tienes en la BD
+        $dia = strtolower(Carbon::parse($fecha)->locale('es')->dayName);
 
-        // ✅ 1. AULAS OCUPADAS POR CLASES (horario_materia)
-        $aulasOcupadasClases = HorarioMateria::whereHas('horario', function ($q) use ($dia, $inicio, $fin) {
-            $q->where('dia', $dia)
-              ->where('hora_inicio', '<', $fin)
-              ->where('hora_fin', '>', $inicio);
-        })->pluck('nro');// aquí tienes el número de aula (campo nro)
+        // 1) Aulas ocupadas por clases (horario_materia) — extraemos el campo 'nro'
+        $aulasOcupadasPorClases = HorarioMateria::whereNotNull('nro')
+            ->whereHas('horario', function ($q) use ($dia, $inicio, $fin) {
+                $q->where('dia', $dia)
+                  ->where('hora_inicio', '<', $fin)
+                  ->where('hora_fin', '>', $inicio);
+            })
+            ->pluck('nro')
+            ->unique()
+            ->values(); // colección de números de aula
 
-        // ✅ 2. AULAS OCUPADAS POR RESERVAS DE OTROS DOCENTES
-        $aulasOcupadasReservas = ReservaAula::where('fecha', $fecha)
-            ->where('estado', '!=', 'rechazada')
-            ->where('hora_inicio', '<', $fin)
-            ->where('hora_fin', '>', $inicio)
-            ->pluck('aula_id');
+        // 2) Aulas ocupadas por reservas en la misma fecha y horario
+        $aulasOcupadasPorReservas = ReservaAula::where('fecha', $fecha)
+            ->whereIn('estado', ['pendiente', 'aprobada']) // considerar solo reservas activas
+            ->where(function ($q) use ($inicio, $fin) {
+                $q->where('hora_inicio', '>', $fin)
+                  ->where('hora_inicio', '<', $fin)
+                  ->where('hora_fin', '>', $inicio)
+                  ->where('hora_fin', '<', $inicio);
+            })
+            ->pluck('aula_id')
+            ->unique()
+            ->values();
 
-        // ✅ Convertir nro de aula a ID real de aulas disponibles
-        $aulasOcupadasIDs = Aula::whereIn('nro', $aulasOcupadasClases)->pluck('nro');
+        // 3) Combinar ambos conjuntos de aulas ocupadas
+        $aulasOcupadas = $aulasOcupadasPorClases->merge($aulasOcupadasPorReservas)->unique()->values();
 
-        // ✅ 3. AULAS DISPONIBLES (NO en clase y NO reservadas)
-        $aulas = Aula::whereNotIn('nro', $aulasOcupadasIDs)
-                    ->whereNotIn('nro', $aulasOcupadasReservas)
-                    ->get();
+        // 4) Recuperar aulas que NO están ocupadas
+        $aulasLibres = Aula::whereNotIn('nro', $aulasOcupadas)
+            ->orderBy('nro')
+            ->get();
 
         return view('reservas.disponibles', [
-            'aulas' => $aulas,
+            'aulas' => $aulasLibres,
             'fecha' => $fecha,
             'inicio' => $inicio,
             'fin' => $fin
         ]);
     }
+
+    public function confirmar(Request $request)
+    {
+        $aula = Aula::findOrFail($request->aula_id);
+        $usuario = Auth::user();
+
+        return view('reservas.confirmar', [
+            'aula' => $aula,
+            'fecha' => $request->fecha,
+            'inicio' => $request->hora_inicio,
+            'fin' => $request->hora_fin,
+            'docente' => $usuario
+        ]);
+    }
+
     public function reservar(Request $request)
     {
         $request->validate([
             'aula_id' => 'required|exists:aulas,nro',
             'fecha' => 'required|date',
-            'hora_inicio' => 'required',
-            'hora_fin' => 'required',
+            'hora_inicio' => 'required|date_format:H:i',
+            'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
         ]);
 
         $usuario = Auth::user();
@@ -85,38 +109,22 @@ class ReservaAulaController extends Controller
         return redirect()->route('reservas.index')
             ->with('success', 'Solicitud enviada correctamente.');
     }
+
     public function formDisponibles()
     {
         return view('reservas.buscar');
     }
-    public function confirmar(Request $request)
-    {
-        $aula = Aula::findOrFail($request->aula_id);
-
-        $usuario= Auth::user();
-
-        return view('reservas.confirmar', [
-            'aula' => $aula,
-            'fecha' => $request->fecha,
-            'inicio' => $request->hora_inicio,
-            'fin' => $request->hora_fin,
-            'docente' => $usuario
-        ]);
-    }
 
     public function listado()
     {
-        // Obtener todas las reservas con información del aula y usuario
         $reservas = \App\Models\ReservaAula::with(['aula', 'usuario'])
             ->orderBy('fecha', 'desc')
             ->get();
 
-        // Si quieres mostrar el día en texto (lunes, martes...), puedes calcularlo aquí
         foreach ($reservas as $reserva) {
             $reserva->dia = ucfirst(Carbon::parse($reserva->fecha)->locale('es')->dayName);
         }
 
         return view('reservas.listado', compact('reservas'));
     }
-
 }

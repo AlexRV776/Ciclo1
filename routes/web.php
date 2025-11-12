@@ -194,4 +194,25 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/reportes/asistencia/export', [App\Http\Controllers\ReporteController::class, 'exportAsistencia'])
         ->name('admin.reportes.asistencia.export');
 });
+use App\Http\Controllers\Admin\UsuarioImportController;
 
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('/usuario/importar', [UsuarioImportController::class, 'showImportForm'])
+        ->name('admin.usuario.importar');
+    Route::post('/usuario/importar', [UsuarioImportController::class, 'import'])
+        ->name('admin.usuario.importar.post');
+});
+use App\Http\Controllers\CalendarioController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/docente/calendario', [CalendarioController::class, 'index'])
+        ->name('docente.calendario');
+});
+Route::post('/admin/oferta/importar', [App\Http\Controllers\ReporteController::class, 'importarOferta'])
+    ->name('oferta.importar');
+    use App\Http\Controllers\MaestrosOfertaController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/oferta/importar', [MaestrosOfertaController::class, 'index'])->name('oferta.importar');
+    Route::post('/admin/oferta/importar', [MaestrosOfertaController::class, 'importar'])->name('oferta.importar.post');
+});

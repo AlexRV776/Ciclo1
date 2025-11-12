@@ -28,29 +28,6 @@
             </a>
         @endif
 
-        {{-- ========================================================= --}}
-        {{-- ✅ MOSTRAR LOS DEMÁS PERMISOS BASADOS EN SU ROL --}}
-        {{-- ========================================================= --}}
-        @foreach($usuario->rol->permisos ?? [] as $permiso)
-            @php
-                $config = [
-                    'ver_materias' => ['📘', 'bg-blue-600', '/materias', 'Ver Materias'],
-                    'ver_horarios' => ['🕒', 'bg-green-600', '/horarios', 'Ver Horarios'],
-                    'ver_grupos' => ['👥', 'bg-purple-600', '/grupos', 'Ver Grupos'],
-                    'gestionar_asistencias' => ['⚙️', 'bg-red-600', '/admin/asistencias', 'Gestionar Asistencias'],
-                    'confirmar_asistencia' => ['🔐', 'bg-indigo-600', '/asistencia/pendientes', 'Confirmar Asistencias'],
-                ];
-            @endphp
-
-            @if(isset($config[$permiso->nombre]))
-                @php [$icon, $color, $ruta, $texto] = $config[$permiso->nombre]; @endphp
-
-                <a href="{{ url($ruta) }}"
-                    class="{{ $color }} text-white p-3 rounded-xl hover:opacity-90 transition font-medium block">
-                    {{ $icon }} {{ $texto }}
-                </a>
-            @endif
-        @endforeach
 
     </div>
 

@@ -197,6 +197,25 @@
                 </a>
             @endif
 
+            {{-- ✅ PERMISO: importar_usuarios_excel --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'importar_usuarios_excel'))
+                <a href="{{ route('admin.usuario.importar') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 transition">
+                    📥 Importar Usuarios Excel
+                </a>
+            @endif
+            @if (Auth::user()->rol->permisos->contains('nombre', 'ver_calendario'))
+                    <a href="{{ route('docente.calendario') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 transition">
+                         Mi calendario
+                    </a>
+            @endif
+            @if(Auth::user()->rol->permisos->contains('nombre', 'importar_oferta'))
+                <li class="nav-item">
+                    <a href="{{ route('oferta.importar') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 transition"> 
+                        Importar Oferta
+                    </a>
+                </li>
+            @endif
+
         </nav>
         @endif
         @endauth
@@ -238,6 +257,9 @@
     </script>
 
     <style>
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to   { opacity: 1; transform: translateY(0); }
