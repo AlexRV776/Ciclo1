@@ -27,7 +27,8 @@ class MaestrosOfertaController extends Controller
         ]);
 
         Excel::import(new MaestrosOfertaImport, $request->file('archivo'));
-
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'Importar oferta', $request, 'Se importó un archivo de oferta de maestros');
         return back()->with('success', 'Archivo importado correctamente 🎉');
     }
 }

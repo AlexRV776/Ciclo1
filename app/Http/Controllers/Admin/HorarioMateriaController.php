@@ -8,6 +8,7 @@ use App\Models\GrupoMateria;
 use App\Models\Horario;
 use App\Models\Aula;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HorarioMateriaController extends Controller
 {
@@ -38,7 +39,12 @@ class HorarioMateriaController extends Controller
             return back()->with('error', '⚠️ El docente ya tiene una materia en ese día y hora.');
         }
 
-        HorarioMateria::create($request->all());
+        $horarioMateria = HorarioMateria::create($request->all());
+
+        // Registrar bitácora
+        registrarBitacora(Auth::user(), 'Crear HorarioMateria', $request,
+            "Se asignó horario al grupo_materia_id {$horarioMateria->grupo_materia_id}, horario_id {$horarioMateria->horario_id}, aula {$horarioMateria->nro}."
+        );
 
         return redirect()->route('admin.horario_materia.index')
             ->with('success', 'Horario asignado correctamente.');
@@ -65,7 +71,13 @@ class HorarioMateriaController extends Controller
             return back()->with('error', '⚠️ El docente ya tiene una materia en ese día y hora.');
         }
 
+        $anterior = $horario_materium->toArray();
         $horario_materium->update($request->all());
+
+        // Registrar bitácora
+        registrarBitacora(Auth::user(), 'Actualizar HorarioMateria', $request,
+            "Se actualizó horarioMateria ID {$horario_materium->id} de grupo_materia_id {$anterior['grupo_materia_id']}, horario_id {$anterior['horario_id']}, aula {$anterior['nro']} a grupo_materia_id {$horario_materium->grupo_materia_id}, horario_id {$horario_materium->horario_id}, aula {$horario_materium->nro}."
+        );
 
         return redirect()->route('admin.horario_materia.index')
             ->with('success', 'Horario actualizado.');
@@ -73,6 +85,11 @@ class HorarioMateriaController extends Controller
 
     public function destroy(HorarioMateria $horario_materium)
     {
+        // Registrar bitácora
+        registrarBitacora(Auth::user(), 'Eliminar HorarioMateria', request(),
+            "Se eliminó horarioMateria ID {$horario_materium->id}, grupo_materia_id {$horario_materium->grupo_materia_id}, horario_id {$horario_materium->horario_id}, aula {$horario_materium->nro}."
+        );
+
         $horario_materium->delete();
 
         return redirect()->route('admin.horario_materia.index')
@@ -91,14 +108,12 @@ class HorarioMateriaController extends Controller
         $horario = Horario::find($horario_id);
         if (!$horario) return false;
 
-        // Buscamos asignaciones del docente en el mismo día que se solapan con la hora
         $query = HorarioMateria::whereHas('grupoMateria', function ($q) use ($docente) {
                 $q->where('docente_registro', $docente);
             })
             ->whereHas('horario', function ($q) use ($horario) {
                 $q->where('dia', $horario->dia)
                   ->where(function($q2) use ($horario) {
-                      // Revisa si hay solapamiento de horas
                       $q2->whereBetween('hora_inicio', [$horario->hora_inicio, $horario->hora_fin])
                          ->orWhereBetween('hora_fin', [$horario->hora_inicio, $horario->hora_fin])
                          ->orWhere(function($q3) use ($horario) {

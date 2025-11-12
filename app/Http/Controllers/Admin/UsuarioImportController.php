@@ -4,20 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Usuario;
-use App\Models\Docente;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\UsuariosImport;
 use Illuminate\Support\Facades\Auth;
 
 class UsuarioImportController extends Controller
 {
     public function showImportForm()
     {
-        // Solo si tiene permiso
         if (!Auth::user()->tienePermiso('importar_usuarios_excel')) {
             abort(403, 'No tienes permiso para importar usuarios.');
         }
+
         return view('usuario.importar');
     }
 
@@ -31,8 +27,11 @@ class UsuarioImportController extends Controller
             'archivo' => 'required|mimes:xlsx,xls'
         ]);
 
-        Excel::import(new UsuariosImport, $request->file('archivo'));
+        // Registrar bitácora
+        registrarBitacora(Auth::user(), 'Importar Usuarios', $request,
+            'Intentó importar usuarios desde un archivo Excel.'
+        );
 
-        return back()->with('success', 'Usuarios importados correctamente.');
+        return back()->with('success', 'Importación registrada en bitácora (acción no ejecutada).');
     }
 }

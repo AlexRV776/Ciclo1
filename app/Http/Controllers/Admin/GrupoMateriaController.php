@@ -8,6 +8,7 @@ use App\Models\Grupo;
 use App\Models\Materia;
 use App\Models\Docente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class GrupoMateriaController extends Controller
 {
@@ -34,7 +35,11 @@ class GrupoMateriaController extends Controller
             'docente_registro' => 'required|exists:docente,registro',
         ]);
 
-        GrupoMateria::create($request->all());
+        $relacion = GrupoMateria::create($request->all());
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'Crear Grupo-Materia', $request,
+            "Se creó la asignación del grupo ID {$relacion->grupo_id} con la materia {$relacion->materia_sigla} y docente {$relacion->docente_registro}."
+        );
 
         return redirect()->route('admin.grupo_materia.index')
                         ->with('success', 'Asignación creada correctamente');
@@ -59,7 +64,13 @@ class GrupoMateriaController extends Controller
         ]);
 
         $relacion = GrupoMateria::findOrFail($id);
+        $anterior = $relacion->toArray();
+
         $relacion->update($request->all());
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'Actualizar Grupo-Materia', $request,
+            "Se actualizó la asignación (ID {$id}) de grupo {$anterior['grupo_id']} a {$relacion->grupo_id}, materia {$anterior['materia_sigla']} a {$relacion->materia_sigla}, docente {$anterior['docente_registro']} a {$relacion->docente_registro}."
+        );
 
         return redirect()->route('admin.grupo_materia.index')
                         ->with('success', 'Asignación actualizada correctamente');
@@ -68,6 +79,11 @@ class GrupoMateriaController extends Controller
     public function destroy($id)
     {
         $relacion = GrupoMateria::findOrFail($id);
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'Eliminar Grupo-Materia', request(), 
+            "Se eliminó la asignación del grupo {$relacion->grupo_id} con materia {$relacion->materia_sigla} y docente {$relacion->docente_registro}."
+        );
+
         $relacion->delete();
 
         return redirect()->route('admin.grupo_materia.index')

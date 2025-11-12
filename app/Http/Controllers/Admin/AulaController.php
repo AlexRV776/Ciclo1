@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Aula;
 use App\Models\HorarioMateria;
 use App\Models\ReservaAula;
+use Illuminate\Support\Facades\Auth;
 
 class AulaController extends Controller
 {
@@ -34,6 +35,9 @@ class AulaController extends Controller
 
         Aula::create($request->all());
 
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'aula', $request, 'Creó una nueva aula');
+
         return redirect()->route('admin.aulas.index')->with('success', 'Aula creada correctamente.');
     }
 
@@ -56,6 +60,9 @@ class AulaController extends Controller
 
         $aula->update($request->all());
 
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'aula', $request, 'Actualizó los datos de un aula');
+
         return redirect()->route('admin.aulas.index')->with('success', 'Aula actualizada correctamente.');
     }
 
@@ -65,28 +72,32 @@ class AulaController extends Controller
         $aula = Aula::findOrFail($nro);
         $aula->delete();
 
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'aula', request(), 'Eliminó un aula');
+
         return redirect()->route('admin.aulas.index')->with('success', 'Aula eliminada correctamente.');
     }
 
+    // Mostrar aulas disponibles según día y hora
     public function disponibles(Request $request)
     {
         $dia = $request->input('dia', 'Lunes');
         $hora_inicio = $request->input('hora_inicio', '08:00:00');
         $hora_fin = $request->input('hora_fin', '09:00:00');
 
-        $aulasOcupadasHM = HorarioMateria::whereHas('horario', function($q) use ($dia, $hora_inicio, $hora_fin) {
+        $aulasOcupadasHM = HorarioMateria::whereHas('horario', function ($q) use ($dia, $hora_inicio, $hora_fin) {
             $q->where('dia', $dia)
-            ->where(function($query) use ($hora_inicio, $hora_fin) {
-                $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
+              ->where(function ($query) use ($hora_inicio, $hora_fin) {
+                  $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
                         ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin]);
-            });
+              });
         })->pluck('nro');
 
         $aulasOcupadasReserva = ReservaAula::where('dia', $dia)
             ->where('estado', '!=', 'rechazado')
-            ->where(function($query) use ($hora_inicio, $hora_fin) {
+            ->where(function ($query) use ($hora_inicio, $hora_fin) {
                 $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
-                    ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin]);
+                      ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin]);
             })
             ->pluck('aula_nro');
 
@@ -96,25 +107,26 @@ class AulaController extends Controller
 
         return view('admin.aulas.disponibles', compact('aulasLibres', 'dia', 'hora_inicio', 'hora_fin'));
     }
+
     public function aulasLibres(Request $request)
     {
         $dia = $request->input('dia', 'Lunes');
         $hora_inicio = $request->input('hora_inicio', '10:00:00');
         $hora_fin = $request->input('hora_fin', '11:00:00');
 
-        $aulasOcupadasHM = HorarioMateria::whereHas('horario', function($q) use ($dia, $hora_inicio, $hora_fin) {
+        $aulasOcupadasHM = HorarioMateria::whereHas('horario', function ($q) use ($dia, $hora_inicio, $hora_fin) {
             $q->where('dia', $dia)
-            ->where(function($query) use ($hora_inicio, $hora_fin) {
-                $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
+              ->where(function ($query) use ($hora_inicio, $hora_fin) {
+                  $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
                         ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin]);
-            });
+              });
         })->pluck('nro');
 
         $aulasOcupadasReserva = ReservaAula::where('dia', $dia)
             ->where('estado', '!=', 'rechazado')
-            ->where(function($query) use ($hora_inicio, $hora_fin) {
+            ->where(function ($query) use ($hora_inicio, $hora_fin) {
                 $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
-                    ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin]);
+                      ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin]);
             })
             ->pluck('aula_nro');
 

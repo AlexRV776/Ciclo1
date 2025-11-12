@@ -29,10 +29,8 @@ class ReservaAulaController extends Controller
         $inicio = $request->hora_inicio;
         $fin = $request->hora_fin;
 
-        // Día en lowercase, tal como tienes en la BD
         $dia = strtolower(Carbon::parse($fecha)->locale('es')->dayName);
 
-        // 1) Aulas ocupadas por clases (horario_materia) — extraemos el campo 'nro'
         $aulasOcupadasPorClases = HorarioMateria::whereNotNull('nro')
             ->whereHas('horario', function ($q) use ($dia, $inicio, $fin) {
                 $q->where('dia', $dia)
@@ -41,25 +39,23 @@ class ReservaAulaController extends Controller
             })
             ->pluck('nro')
             ->unique()
-            ->values(); // colección de números de aula
+            ->values();
 
-        // 2) Aulas ocupadas por reservas en la misma fecha y horario
         $aulasOcupadasPorReservas = ReservaAula::where('fecha', $fecha)
-            ->whereIn('estado', ['pendiente', 'aprobada']) // considerar solo reservas activas
+            ->whereIn('estado', ['pendiente', 'aprobada'])
             ->where(function ($q) use ($inicio, $fin) {
-                $q->where('hora_inicio', '>', $fin)
-                  ->where('hora_inicio', '<', $fin)
-                  ->where('hora_fin', '>', $inicio)
-                  ->where('hora_fin', '<', $inicio);
+                $q->where('hora_inicio', '<', $fin)
+                  ->where('hora_fin', '>', $inicio);
             })
             ->pluck('aula_id')
             ->unique()
             ->values();
 
-        // 3) Combinar ambos conjuntos de aulas ocupadas
-        $aulasOcupadas = $aulasOcupadasPorClases->merge($aulasOcupadasPorReservas)->unique()->values();
+        $aulasOcupadas = $aulasOcupadasPorClases
+            ->merge($aulasOcupadasPorReservas)
+            ->unique()
+            ->values();
 
-        // 4) Recuperar aulas que NO están ocupadas
         $aulasLibres = Aula::whereNotIn('nro', $aulasOcupadas)
             ->orderBy('nro')
             ->get();
@@ -106,6 +102,9 @@ class ReservaAulaController extends Controller
             'estado' => 'pendiente'
         ]);
 
+        // Registrar bitácora
+        registrarBitacora($usuario, 'reserva_aula', $request, 'Realizó una solicitud de reserva de aula');
+
         return redirect()->route('reservas.index')
             ->with('success', 'Solicitud enviada correctamente.');
     }
@@ -117,7 +116,7 @@ class ReservaAulaController extends Controller
 
     public function listado()
     {
-        $reservas = \App\Models\ReservaAula::with(['aula', 'usuario'])
+        $reservas = ReservaAula::with(['aula', 'usuario'])
             ->orderBy('fecha', 'desc')
             ->get();
 

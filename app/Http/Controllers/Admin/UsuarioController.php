@@ -16,9 +16,9 @@ class UsuarioController extends Controller
         $usuario = Auth::user()->load('rol.permisos');
         return view('usuario.definido', compact('usuario'));
     }
+
     public function gestionarUsuario()
     {
-        // Solo los administradores deberían entrar aquí
         $usuarios = Usuario::with('rol')->get();
         return view('usuario.index', compact('usuarios'));
     }
@@ -38,13 +38,18 @@ class UsuarioController extends Controller
         $usuario->rol_id = $request->rol_id;
         $usuario->save();
 
-        // Si el usuario es docente, mostrar el formulario al ADMIN
+        // Registrar bitácora
+        registrarBitacora(Auth::user(), 'Asignar Rol', $request,
+            "Se asignó el rol '{$usuario->rol->nombre}' al usuario '{$usuario->nombre}'."
+        );
+
         if ($usuario->rol && $usuario->rol->nombre === 'Docente') {
             return view('usuario.form_docente', compact('usuario'));
         }
 
         return redirect()->route('admin.dashboard')->with('success', 'Rol asignado correctamente.');
     }
+
     public function panel()
     {
         $usuario = Auth::user();
@@ -77,18 +82,17 @@ class UsuarioController extends Controller
             'sueldo' => 'required|numeric|min:0',
         ]);
 
-        \App\Models\Docente::create([
-            'registro' => $usuario->registro,
-            'fecha_contrato' => $request->fecha_contrato,
-            'especialidad' => $request->especialidad,
-            'sueldo' => $request->sueldo,
-        ]);
+        // Registrar bitácora
+        registrarBitacora($usuario, 'Registrar Docente', $request,
+            "El usuario '{$usuario->nombre}' completó sus datos de docente."
+        );
 
         $usuario->update(['estado' => true]);
 
         return redirect()->route('usuario.definido')
             ->with('success', 'Datos del docente guardados correctamente.');
     }
+
     public function guardarDocenteAdmin(Request $request, Usuario $usuario)
     {
         $request->validate([
@@ -97,12 +101,10 @@ class UsuarioController extends Controller
             'sueldo' => 'required|numeric|min:0',
         ]);
 
-        Docente::create([
-            'registro' => $usuario->registro,
-            'fecha_contrato' => $request->fecha_contrato,
-            'especialidad' => $request->especialidad,
-            'sueldo' => $request->sueldo,
-        ]);
+        // Registrar bitácora
+        registrarBitacora(Auth::user(), 'Contratar Docente', $request,
+            "El usuario '{$usuario->nombre}' fue contratado como docente."
+        );
 
         $usuario->update(['estado' => true]);
 

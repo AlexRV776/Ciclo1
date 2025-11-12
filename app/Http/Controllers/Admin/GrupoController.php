@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Grupo;
+use Illuminate\Support\Facades\Auth;
 
 class GrupoController extends Controller
 {
@@ -28,9 +29,11 @@ class GrupoController extends Controller
             'nombre' => 'required|string|max:100|unique:grupo,nombre',
         ]);
 
-        Grupo::create([
+        $grupo = Grupo::create([
             'nombre' => $request->nombre,
         ]);
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'Crear Grupo', $request, "Se creó el grupo '{$grupo->nombre}'.");
 
         return redirect()->route('admin.grupos.index')->with('success', 'Grupo creado correctamente.');
     }
@@ -48,7 +51,10 @@ class GrupoController extends Controller
             'nombre' => 'required|string|max:100|unique:grupo,nombre,' . $grupo->id,
         ]);
 
+        $nombreAnterior = $grupo->nombre;
         $grupo->update(['nombre' => $request->nombre]);
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'Actualizar Grupo', $request, "Se actualizó el grupo '{$nombreAnterior}' a '{$grupo->nombre}'.");
 
         return redirect()->route('admin.grupos.index')->with('success', 'Grupo actualizado correctamente.');
     }
@@ -56,7 +62,11 @@ class GrupoController extends Controller
     // Eliminar grupo
     public function destroy(Grupo $grupo)
     {
+        $nombre = $grupo->nombre;
         $grupo->delete();
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'Eliminar Grupo', request(), "Se eliminó el grupo '{$nombre}'.");
+
         return redirect()->route('admin.grupos.index')->with('success', 'Grupo eliminado correctamente.');
     }
 }

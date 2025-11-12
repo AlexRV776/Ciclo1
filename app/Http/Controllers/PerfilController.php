@@ -33,6 +33,9 @@ class PerfilController extends Controller
 
         $usuario->save();
 
+        // ✅ Registrar en bitácora directamente
+        registrarBitacora($usuario, 'Actualizar perfil', $request, 'El usuario actualizó su información personal');
+
         return redirect()->back()->with('success', 'Perfil actualizado correctamente.');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Horario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HorarioController extends Controller
 {
@@ -27,7 +28,11 @@ class HorarioController extends Controller
             'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
         ]);
 
-        Horario::create($request->all());
+        $horario = Horario::create($request->all());
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'Crear Horario', $request,
+            "Se creó un horario para {$horario->dia} de {$horario->hora_inicio} a {$horario->hora_fin}."
+        );
 
         return redirect()->route('admin.horario.index')->with('success', 'Horario registrado correctamente.');
     }
@@ -45,14 +50,25 @@ class HorarioController extends Controller
             'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
         ]);
 
+        $anterior = $horario->toArray();
         $horario->update($request->all());
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'Actualizar Horario', $request,
+            "Se actualizó el horario de {$anterior['dia']} ({$anterior['hora_inicio']} - {$anterior['hora_fin']}) a {$horario->dia} ({$horario->hora_inicio} - {$horario->hora_fin})."
+        );
 
         return redirect()->route('admin.horario.index')->with('success', 'Horario actualizado correctamente.');
     }
 
     public function destroy(Horario $horario)
     {
+        //Registrar bitácora
+        registrarBitacora(Auth::user(), 'Eliminar Horario', request(),
+            "Se eliminó el horario de {$horario->dia} de {$horario->hora_inicio} a {$horario->hora_fin}."
+        );
+
         $horario->delete();
+
         return redirect()->route('admin.horario.index')->with('success', 'Horario eliminado correctamente.');
     }
 }

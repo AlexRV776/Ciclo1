@@ -6,6 +6,7 @@ use App\Models\Rol;
 use App\Models\Permiso;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class RolController extends Controller
 {
@@ -30,9 +31,12 @@ class RolController extends Controller
         ]);
 
         $rol = Rol::create($request->only('nombre', 'descripcion'));
-
-        // Relación many-to-many
         $rol->permisos()->sync($request->input('permisos', []));
+
+        // Registrar bitácora
+        registrarBitacora(Auth::user(), 'Crear Rol', $request,
+            "Se creó el rol '{$rol->nombre}' con permisos asignados."
+        );
 
         return redirect()->route('admin.roles.index')->with('success', 'Rol creado correctamente.');
     }
@@ -52,16 +56,28 @@ class RolController extends Controller
             'permisos' => 'array'
         ]);
 
+        $anterior = $rol->nombre;
         $rol->update($request->only('nombre', 'descripcion'));
         $rol->permisos()->sync($request->input('permisos', []));
+
+        // Registrar bitácora
+        registrarBitacora(Auth::user(), 'Actualizar Rol', $request,
+            "Se actualizó el rol de nombre '{$anterior}'."
+        );
 
         return redirect()->route('admin.roles.index')->with('success', 'Rol actualizado correctamente.');
     }
 
     public function destroy(Rol $rol)
     {
+        // Registrar bitácora
+        registrarBitacora(Auth::user(), 'Eliminar Rol', request(),
+            "Se eliminó el rol '{$rol->nombre}'."
+        );
+
         $rol->permisos()->detach();
         $rol->delete();
+
         return redirect()->route('admin.roles.index')->with('success', 'Rol eliminado correctamente.');
     }
 }
