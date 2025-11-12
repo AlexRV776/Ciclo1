@@ -1,5 +1,5 @@
-# Imagen base con PHP y Composer
-FROM php:8.2-apache
+# Imagen base con PHP 8.3 y Apache
+FROM php:8.3-apache
 
 # Instalar dependencias necesarias incluyendo PostgreSQL
 RUN apt-get update && apt-get install -y \
@@ -14,6 +14,8 @@ WORKDIR /var/www/html
 
 # Instalar Composer
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+
+# Instalar dependencias de Laravel
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Configurar permisos para Laravel
