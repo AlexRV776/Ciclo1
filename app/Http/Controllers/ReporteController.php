@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Usuario;
+use App\Models\Asistencia;
+use App\Models\Docente;
 use Barryvdh\DomPDF\Facade\Pdf;// si usas barryvdh/laravel-dompdf
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
@@ -58,6 +60,57 @@ class ReporteController extends Controller
             return Excel::download(
                 new \App\Exports\PersonalExport($personal),
                 'reporte_personal.xlsx'
+            );
+        }
+
+        return back()->with('error', 'Tipo de reporte no válido');
+    }
+
+    public function asistencia(Request $request)
+    {
+        $docentes = Docente::with('usuario')->get();
+        registrarBitacora(Auth::user(), 'reportes_asistencia', $request, 'ingresó a ver reporte de asistencia');
+
+        return view('admin.reportes.asistencia', compact('docentes'));
+    }
+
+    public function exportAsistencia(Request $request)
+    {
+        $tipo = $request->input('tipo');
+
+        $query = Asistencia::with(['docente.usuario', 'horarioMateria.grupoMateria.materia'])
+            ->orderBy('fecha', 'desc');
+
+        // Filtro por docente
+        if ($request->docente_registro) {
+            $query->where('docente_registro', $request->docente_registro);
+        }
+
+        // Filtro por fecha de inicio
+        if ($request->fecha_desde) {
+            $query->where('fecha', '>=', $request->fecha_desde);
+        }
+
+        // Filtro por fecha de fin
+        if ($request->fecha_hasta) {
+            $query->where('fecha', '<=', $request->fecha_hasta);
+        }
+
+        $asistencias = $query->get();
+
+        // Exportar PDF
+        if ($tipo === 'pdf') {
+            registrarBitacora(Auth::user(), 'reporte_asistencia', $request, 'Exportó reporte de asistencia en PDF');
+            $pdf = PDF::loadView('admin.reportes.asistencia_pdf', compact('asistencias'));
+            return $pdf->download('reporte_asistencia.pdf');
+        }
+
+        // Exportar Excel
+        if ($tipo === 'excel') {
+            registrarBitacora(Auth::user(), 'reporte_asistencia', $request, 'Exportó reporte de asistencia en Excel');
+            return Excel::download(
+                new \App\Exports\AsistenciaExport($asistencias),
+                'reporte_asistencia.xlsx'
             );
         }
 

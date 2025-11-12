@@ -13,9 +13,10 @@
                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-300">
                 + Crear Grupo
             </a>
-            <button class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-300">
+            <a href="{{ route('admin.grupo_materia.create') }}" 
+               class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-300">
                 📚 Asignar Materias
-            </button>
+            </a>
         </div>
     </div>
 

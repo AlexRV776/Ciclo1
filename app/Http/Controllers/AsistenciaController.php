@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asistencia;
 use App\Models\HorarioMateria;
+use App\Models\Materia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -64,11 +65,44 @@ class AsistenciaController extends Controller
         Asistencia::create([
             'fecha' => $hoy,
             'modalidad' => $modalidad,
-            'estado' => 'asistido',
+            'estado' => 'confirmado',
             'docente_registro' => $docente->registro,
             'horario_materia_id' => $hm->id,
         ]);
 
         return redirect()->route('asistencia.index')->with('success', 'Asistencia marcada correctamente.');
     }
+
+    // Mostrar formulario para seleccionar fecha
+    public function gestionar()
+    {
+        $materias = Materia::all(); // Traer todas las materias
+        return view('asistencia.gestionar', compact('materias')); // Pasar a la vista
+    }
+
+    public function filtrar(Request $request)
+    {
+        $request->validate([
+            'fecha' => 'required|date',
+            'materia_id' => 'nullable|exists:materias,id'
+        ]);
+
+        $fecha = $request->fecha;
+        $materia_id = $request->materia_id;
+
+        $query = Asistencia::with(['docente.usuario', 'horarioMateria.grupoMateria.materia'])
+            ->where('fecha', $fecha);
+
+        if ($materia_id) {
+            $query->whereHas('horarioMateria.grupoMateria.materia', function($q) use ($materia_id) {
+                $q->where('id', $materia_id);
+            });
+        }
+
+        $asistencias = $query->orderBy('estado', 'asc')->get();
+
+        $materias = Materia::all(); // También pasamos materias aquí para el select
+        return view('asistencia.gestionar', compact('asistencias', 'fecha', 'materias', 'materia_id'));
+    }
+
 }

@@ -95,97 +95,113 @@
         {{-- ✅ Menú según permisos --}}
         @auth
         @if(Auth::user()->rol && Auth::user()->rol->permisos)
-            <div class="mt-4 px-4 text-xs uppercase text-gray-500">Accesos</div>
-
-            <nav class="p-4 space-y-2 text-sm">
-
-                {{-- ✅ PERMISO: ver_materias --}}
-                @if(Auth::user()->rol->permisos->contains('nombre', 'ver_materias'))
-                    <a href="{{ route('admin.materias.index') }}" 
-                    class="block py-2 px-3 rounded-lg hover:bg-gray-800 transition">
-                    📘 Materias
-                    </a>
-                @endif
-
-                {{-- ✅ PERMISO: ver_horarios --}}
-                @if(Auth::user()->rol->permisos->contains('nombre', 'ver_horarios'))
-                    <a href="{{ route('admin.horario.index') }}" 
-                    class="block py-2 px-3 rounded-lg hover:bg-gray-800 transition">
-                    🕒 Horarios
-                    </a>
-                @endif
-
-                {{-- ✅ PERMISO: ver_grupos --}}
-                @if(Auth::user()->rol->permisos->contains('nombre', 'ver_grupos'))
-                    <a href="{{ route('admin.grupos.index') }}" 
-                    class="block py-2 px-3 rounded-lg hover:bg-gray-800 transition">
-                    👥 Grupos
-                    </a>
-                @endif
-
-                {{-- ✅ PERMISO: confirmar_asistencia --}}
-                @if(Auth::user()->rol->permisos->contains('nombre', 'confirmar_asistencia'))
-                    <a href="{{ url('/asistencia/pendientes') }}" 
-                    class="block py-2 px-3 rounded-lg hover:bg-gray-800 transition">
-                    ✅ Confirmar Asistencias
-                    </a>
-                @endif
-
-                {{-- ✅ PERMISO: gestionar_asistencias --}}
-                @if(Auth::user()->rol->permisos->contains('nombre', 'gestionar_asistencias'))
-                    <a href="{{ url('/admin/asistencias') }}" 
-                    class="block py-2 px-3 rounded-lg hover:bg-gray-800 transition">
-                    ⚙️ Gestionar Asistencias
-                    </a>
-                @endif
-
-                {{-- ✅ PERMISO NUEVO: ver_aulas / reserva de aulas --}}
-                @if(Auth::user()->rol->permisos->contains('nombre', 'ver_aulas'))
-                    <a href="{{ route('reservas.index') }}" 
-                    class="block py-2 px-3 rounded-lg hover:bg-gray-800 transition">
-                    🏫 Reservar Aulas
-                    </a>
-                @endif
-
-                {{-- ✅ PERMISO: ver_reportes_personal --}}
-                @if(Auth::user()->rol->permisos->contains('nombre', 'ver_reportes_personal'))
-                    <a href="{{ route('admin.reportes.personal') }}" 
-                    class="block py-2 px-3 rounded-lg hover:bg-gray-800 transition">
-                        📄 Reporte de Personal
-                    </a>
-                @endif
-            </nav>
-        @endif
-        @endauth
-
-        {{-- ✅ Administración --}}
-        @auth
-        @if(Auth::user()->rol && Auth::user()->rol->nombre === 'Administrador')
         <div class="mt-6 px-4 text-xs uppercase text-gray-500">Administración</div>
 
         <nav class="p-4 space-y-2 text-sm">
-            <a href="{{ route('admin.materias.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">📘 Materias</a>
-            <a href="{{ route('admin.grupos.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">👥 Grupos</a>
-            <a href="{{ route('admin.aulas.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">🏫 Aulas</a>
-            <a href="{{ route('admin.bitacora') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">📜 Bitácora</a>
-            <a href="{{ route('admin.horario.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">🕒 Horario</a>
-            <a href="{{ route('admin.grupo_materia.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">➕ Asignar Materia a Grupo</a>
-            <a href="{{ route('admin.horario_materia.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">➕ Asignar Aula a Materia</a>
-            <a href="{{ route('admin.roles.index') }}"
-            class="block px-4 py-2 text-gray-300 hover:bg-gray-700 transition">
-            🔧 Gestionar Roles
-            <a href="{{ route('admin.permisos.index') }}"
-                class="block px-4 py-2 text-gray-300 hover:bg-gray-700 transition">
-                🛡️ Gestionar Permisos
-            </a>
-            <a href="{{ route('admin.usuarios.index') }}"
-                class="block px-4 py-2 text-gray-300 hover:bg-gray-700 transition">
-                👤 Gestionar Usuarios
-            </a>
-        </a>
+
+            {{-- ✅ PERMISO: ver_materias --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'ver_materias'))
+                <a href="{{ route('admin.materias.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    📘 Materias
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: ver_grupos --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'ver_grupos'))
+                <a href="{{ route('admin.grupos.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    👥 Grupos
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: ver_aulas --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'ver_aulas'))
+                <a href="{{ route('admin.aulas.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    🏫 Aulas
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: ver_bitacora --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'ver_bitacora'))
+                <a href="{{ route('admin.bitacora') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    📜 Bitácora
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: ver_horarios --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'ver_horarios'))
+                <a href="{{ route('admin.horario.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    🕒 Horario
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: ver_reservas --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'ver_reservas'))
+                <a href="{{ route('reservas.listado') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    📖 Aulas reservadas
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: ver_docentes --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'ver_docentes'))
+                <a href="{{ route('admin.docentes.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    👨‍🏫 Docentes
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: ver_asignar_materia_grupo --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'ver_asignar_materia_grupo'))
+                <a href="{{ route('admin.grupo_materia.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    ➕ Asignar Materia a Grupo
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: ver_asignar_aula_horario --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'ver_asignar_aula_horario'))
+                <a href="{{ route('admin.horario_materia.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    ➕ Asignar Aula y Horario a Materia
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: gestionar_roles --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'gestionar_roles'))
+                <a href="{{ route('admin.roles.index') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 transition">
+                    🔧 Gestionar Roles
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: gestionar_permisos --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'gestionar_permisos'))
+                <a href="{{ route('admin.permisos.index') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 transition">
+                    🛡️ Gestionar Permisos
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: gestionar_usuarios --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'gestionar_usuarios'))
+                <a href="{{ route('admin.usuarios.index') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 transition">
+                    👤 Gestionar Usuarios
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: gestionar_asistencias --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'gestionar_asistencias'))
+                <a href="{{ route('asistencia.gestionar') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    ⚙️ Gestionar Asistencias
+                </a>
+            @endif
+
+            {{-- ✅ PERMISO: ver_reportes --}}
+            @if(Auth::user()->rol->permisos->contains('nombre', 'ver_reportes'))
+                <a href="{{ route('admin.reportes.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
+                    📄 Lista de Reportes
+                </a>
+            @endif
+
         </nav>
         @endif
         @endauth
+
+
 
     </aside>
 

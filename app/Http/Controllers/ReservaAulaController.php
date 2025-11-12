@@ -35,23 +35,16 @@ class ReservaAulaController extends Controller
 
         // ✅ 1. AULAS OCUPADAS POR CLASES (horario_materia)
         $aulasOcupadasClases = HorarioMateria::whereHas('horario', function ($q) use ($dia, $inicio, $fin) {
-                $q->where('dia', $dia)
-                ->where(function ($c) use ($inicio, $fin) {
-                        $c->whereBetween('hora_inicio', [$inicio, $fin])
-                        ->orWhereBetween('hora_fin', [$inicio, $fin])
-                        ->orWhereRaw('? BETWEEN hora_inicio AND hora_fin', [$inicio]);
-                });
-            })
-            ->pluck('nro'); // aquí tienes el número de aula (campo nro)
+            $q->where('dia', $dia)
+              ->where('hora_inicio', '<', $fin)
+              ->where('hora_fin', '>', $inicio);
+        })->pluck('nro');// aquí tienes el número de aula (campo nro)
 
         // ✅ 2. AULAS OCUPADAS POR RESERVAS DE OTROS DOCENTES
         $aulasOcupadasReservas = ReservaAula::where('fecha', $fecha)
             ->where('estado', '!=', 'rechazada')
-            ->where(function ($q) use ($inicio, $fin) {
-                $q->whereBetween('hora_inicio', [$inicio, $fin])
-                ->orWhereBetween('hora_fin', [$inicio, $fin])
-                ->orWhereRaw('? BETWEEN hora_inicio AND hora_fin', [$inicio]);
-            })
+            ->where('hora_inicio', '<', $fin)
+            ->where('hora_fin', '>', $inicio)
             ->pluck('aula_id');
 
         // ✅ Convertir nro de aula a ID real de aulas disponibles
@@ -110,4 +103,20 @@ class ReservaAulaController extends Controller
             'docente' => $usuario
         ]);
     }
+
+    public function listado()
+    {
+        // Obtener todas las reservas con información del aula y usuario
+        $reservas = \App\Models\ReservaAula::with(['aula', 'usuario'])
+            ->orderBy('fecha', 'desc')
+            ->get();
+
+        // Si quieres mostrar el día en texto (lunes, martes...), puedes calcularlo aquí
+        foreach ($reservas as $reserva) {
+            $reserva->dia = ucfirst(Carbon::parse($reserva->fecha)->locale('es')->dayName);
+        }
+
+        return view('reservas.listado', compact('reservas'));
+    }
+
 }

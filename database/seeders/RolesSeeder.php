@@ -4,9 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Rol;
+use App\Models\Permiso;
+
 class RolesSeeder extends Seeder
 {
-
     public function run(): void
     {
         $roles = [
@@ -15,11 +16,17 @@ class RolesSeeder extends Seeder
             ['nombre' => 'Secretaria', 'descripcion' => 'Secretaría académica'],
         ];
 
-        foreach ($roles as $rol) {
-            Rol::updateOrCreate(
-                ['nombre' => $rol['nombre']],  // condición
-                ['descripcion' => $rol['descripcion']] // valores
+        foreach ($roles as $rolData) {
+            $rol = Rol::updateOrCreate(
+                ['nombre' => $rolData['nombre']],  // condición
+                ['descripcion' => $rolData['descripcion']] // valores
             );
+
+            // ✅ Asignar todos los permisos al rol Administrador
+            if ($rol->nombre === 'Administrador') {
+                $permisos = Permiso::all(); // todos los permisos existentes
+                $rol->permisos()->sync($permisos->pluck('id'));
+            }
         }
     }
 }

@@ -7,6 +7,24 @@
 
 <h2 class="text-xl font-bold mb-4">Editar Asignación de Horario</h2>
 
+{{-- Mostrar mensaje de error de conflicto --}}
+@if(session('error'))
+    <div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+        {{ session('error') }}
+    </div>
+@endif
+
+{{-- Validaciones de Laravel --}}
+@if($errors->any())
+    <div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+        <ul class="list-disc pl-5">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <form action="{{ route('admin.horario_materia.update', $horario_materium->id) }}" method="POST">
     @csrf
     @method('PUT')
@@ -24,7 +42,7 @@
     <select name="horario_id" class="w-full p-2 border rounded mb-3" required>
         @foreach ($horarios as $h)
             <option value="{{ $h->id }}" {{ $h->id == $horario_materium->horario_id ? 'selected' : '' }}>
-                {{ $h->dia }} ({{ $h->hora_inicio }} - {{ $h->hora_fin }})
+                {{ ucfirst($h->dia) }} ({{ $h->hora_inicio }} - {{ $h->hora_fin }})
             </option>
         @endforeach
     </select>

@@ -39,4 +39,38 @@ class GrupoMateriaController extends Controller
         return redirect()->route('admin.grupo_materia.index')
                         ->with('success', 'Asignación creada correctamente');
     }
+
+    public function edit($id)
+    {
+        $relacion = GrupoMateria::findOrFail($id);
+        $grupos = Grupo::all();
+        $materias = Materia::all();
+        $docentes = Docente::with('usuario')->get();
+
+        return view('admin.grupo_materia.edit', compact('relacion', 'grupos', 'materias', 'docentes'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'grupo_id' => 'required|exists:grupo,id',
+            'materia_sigla' => 'required|exists:materia,sigla',
+            'docente_registro' => 'required|exists:docente,registro',
+        ]);
+
+        $relacion = GrupoMateria::findOrFail($id);
+        $relacion->update($request->all());
+
+        return redirect()->route('admin.grupo_materia.index')
+                        ->with('success', 'Asignación actualizada correctamente');
+    }
+
+    public function destroy($id)
+    {
+        $relacion = GrupoMateria::findOrFail($id);
+        $relacion->delete();
+
+        return redirect()->route('admin.grupo_materia.index')
+                        ->with('success', 'Asignación eliminada correctamente');
+    }
 }

@@ -89,6 +89,10 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
     Route::resource('permisos', App\Http\Controllers\Admin\PermisoController::class);
 });
 
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('docentes', DocenteController::class);
+});
+
 Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/usuarios', [UsuarioController::class, 'index'])->name('admin.usuarios.index');
     Route::get('/usuarios/{usuario}/contratar', [UsuarioController::class, 'contratar'])->name('admin.usuarios.contratar');
@@ -139,6 +143,11 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/asistencia/gestionar', [AsistenciaController::class, 'gestionar'])->name('asistencia.gestionar');
+    Route::post('/asistencia/gestionar', [AsistenciaController::class, 'filtrar'])->name('asistencia.filtrar');
+});
+
 use App\Http\Controllers\PerfilController;
 
 Route::middleware('auth')->group(function () {
@@ -162,8 +171,16 @@ Route::middleware(['auth'])->group(function () {
     });
     Route::post('/reservas/crear', [ReservaAulaController::class, 'reservar'])->name('reservas.crear');
 
+    // ✅ Nueva vista para ver todas las reservas
+    Route::get('/reservas/listado', [ReservaAulaController::class, 'listado'])
+        ->name('reservas.listado');
 });
 Route::middleware(['auth'])->group(function () {
+    
+    // Ruta del índice de reportes
+    Route::get('/admin/reportes', function () {
+        return view('admin.reportes.index');
+    })->name('admin.reportes.index');
 
     Route::get('/admin/reportes/personal', [App\Http\Controllers\ReporteController::class, 'personal'])
         ->name('admin.reportes.personal');
@@ -171,5 +188,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/reportes/personal/export', [App\Http\Controllers\ReporteController::class, 'exportPersonal'])
         ->name('admin.reportes.personal.export');
 
+    Route::get('/admin/reportes/asistencia', [App\Http\Controllers\ReporteController::class, 'asistencia'])
+        ->name('admin.reportes.asistencia');
+        
+    Route::post('/admin/reportes/asistencia/export', [App\Http\Controllers\ReporteController::class, 'exportAsistencia'])
+        ->name('admin.reportes.asistencia.export');
 });
 

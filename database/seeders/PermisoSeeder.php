@@ -11,10 +11,19 @@ class PermisoSeeder extends Seeder
     {
         $permisos = [
             'ver_materias',
-            'ver_horarios',
-            'gestionar_asistencias',
+            'ver_grupos',
             'ver_aulas',
-            'ver_reportes_personal',
+            'ver_bitacora',
+            'ver_horarios',
+            'ver_reservas',
+            'ver_docentes',
+            'ver_asignar_materia_grupo',
+            'ver_asignar_aula_horario',
+            'gestionar_roles',
+            'gestionar_permisos',
+            'gestionar_usuarios',
+            'gestionar_asistencias',
+            'ver_reportes',
         ];
 
         foreach ($permisos as $permiso) {

@@ -14,6 +14,7 @@
             <th class="p-2">Grupo</th>
             <th class="p-2">Materia</th>
             <th class="p-2">Docente</th>
+            <th class="p-2">Acciones</th>
         </tr>
     </thead>
 
@@ -23,6 +24,23 @@
             <td class="p-2">{{ $rel->grupo->nombre }}</td>
             <td class="p-2">{{ $rel->materia->nombre }}</td>
             <td class="p-2">{{ $rel->docente->usuario->nombre }}</td>
+            <td class="p-2 text-center">
+                <a href="{{ route('admin.grupo_materia.edit', $rel->id) }}" 
+                   class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
+                    Editar
+                </a>
+
+                <form action="{{ route('admin.grupo_materia.destroy', $rel->id) }}" 
+                      method="POST" class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" 
+                            class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                            onclick="return confirm('¿Eliminar?')">
+                        Eliminar
+                    </button>
+                </form>
+            </td>
         </tr>
         @endforeach
     </tbody>

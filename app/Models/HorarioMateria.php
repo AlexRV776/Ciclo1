@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
+use App\Models\ReservaAula;
 
 class HorarioMateria extends Model
 {
@@ -28,4 +30,5 @@ class HorarioMateria extends Model
     {
         return $this->belongsTo(Aula::class, 'nro', 'nro');
     }
+
 }
