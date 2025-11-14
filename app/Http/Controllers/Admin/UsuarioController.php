@@ -101,6 +101,14 @@ class UsuarioController extends Controller
             'sueldo' => 'required|numeric|min:0',
         ]);
 
+        Docente::create([
+            'registro' => $usuario->registro,
+            'fecha_contrato' => $request->fecha_contrato,
+            'especialidad' => $request->especialidad,
+            'sueldo' => $request->sueldo,
+        ]);
+
+
         // Registrar bitácora
         registrarBitacora(Auth::user(), 'Contratar Docente', $request,
             "El usuario '{$usuario->nombre}' fue contratado como docente."
