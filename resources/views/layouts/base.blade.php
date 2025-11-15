@@ -14,7 +14,7 @@
 
     {{-- ✅ SIDEBAR OSCURO (Estilo ChatGPT) --}}
     <aside id="sidebar"
-        class="bg-gray-900 text-gray-300 w-64 min-h-screen fixed md:relative transform md:translate-x-0 -translate-x-full transition-transform duration-300 z-40">
+        class="bg-gray-900 text-gray-300 w-64 h-screen overflow-y-auto fixed md:relative transform md:translate-x-0 -translate-x-full transition-transform duration-300 z-40">
 
         {{-- Header --}}
         <div class="flex items-center justify-between p-4 border-b border-gray-700">
@@ -265,6 +265,16 @@
             to   { opacity: 1; transform: translateY(0); }
         }
         .animate-fadeIn { animation: fadeIn .4s ease-in-out; }
+    </style>
+    <style>
+    /* Scroll fino */
+    #sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+    #sidebar::-webkit-scrollbar-thumb {
+        background: #4b5563;
+        border-radius: 6px;
+    }
     </style>
 
 </body>

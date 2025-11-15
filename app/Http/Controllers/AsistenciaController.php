@@ -71,14 +71,51 @@ class AsistenciaController extends Controller
         return redirect()->route('asistencia.index')->with('success', 'Asistencia marcada correctamente.');
     }
 
-    public function gestionar()
+    public function gestionar(Request $request)
     {
-        $materias = Materia::all();
+        // permisos / bitácora
+        registrarBitacora(Auth::user(), 'gestionar_asistencias', $request, 'Ingresó al módulo de gestión de asistencias.');
 
-        //Registrar en bitácora
-        registrarBitacora(Auth::user(), 'gestionar_asistencias', request(), 'Ingresó al módulo de gestión de asistencias.');
+        // listas para selects
+        $materias = Materia::orderBy('nombre')->get();
 
-        return view('asistencia.gestionar', compact('materias'));
+        // construimos la consulta base
+        $query = Asistencia::with([
+            'docente.usuario', 
+            'horarioMateria.grupoMateria.materia',
+            'horarioMateria.grupoMateria.grupo'
+        ])->orderBy('fecha', 'desc')->orderBy('estado', 'asc');
+
+        // filtros opcionales (usamos GET-friendly params)
+        $fecha = $request->query('fecha');
+        $registro = $request->query('registro'); // busca por docente_registro
+        $materia_sigla = $request->query('materia_sigla');
+
+        if ($fecha) {
+            // validar formato básico YYYY-MM-DD (no abortamos, solo ignoramos si inválido)
+            try {
+                $d = Carbon::parse($fecha)->toDateString();
+                $query->where('fecha', $d);
+            } catch (\Throwable $e) {
+                // ignorar el filtro si fecha inválida
+            }
+        }
+
+        if ($registro) {
+            $query->where('docente_registro', $registro);
+        }
+
+        if ($materia_sigla) {
+            // la relación grupoMateria tiene materia_sigla -> filtramos por esa columna
+            $query->whereHas('horarioMateria.grupoMateria', function ($q) use ($materia_sigla) {
+                $q->where('materia_sigla', $materia_sigla);
+            });
+        }
+
+        // obtener resultados (para sets grandes podrías paginar -> ->paginate(30))
+        $asistencias = $query->get();
+
+        return view('asistencia.gestionar', compact('asistencias', 'materias', 'fecha', 'registro', 'materia_sigla'));
     }
 
     public function filtrar(Request $request)

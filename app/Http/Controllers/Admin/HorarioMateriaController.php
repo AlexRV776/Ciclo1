@@ -35,16 +35,20 @@ class HorarioMateriaController extends Controller
             'nro' => 'required|exists:aulas,nro',
         ]);
 
-        if ($this->docenteTieneConflicto($request->grupo_materia_id, $request->horario_id)) {
-            return back()->with('error', '⚠️ El docente ya tiene una materia en ese día y hora.');
+        $gm = GrupoMateria::with('docente')->find($request->grupo_materia_id);
+        $horario = Horario::find($request->horario_id);
+
+        // 1️⃣ Validar conflicto del docente
+        if ($this->docenteTieneConflicto($gm->docente_registro, $horario, null)) {
+            return back()->with('error', '⚠️ El docente ya tiene una materia asignada en este horario.');
         }
 
-        $horarioMateria = HorarioMateria::create($request->all());
+        // 2️⃣ Validar conflicto de aula (solo si es la misma aula)
+        if ($this->aulaOcupada($request->nro, $horario, null)) {
+            return back()->with('error', '⚠️ El aula ya está ocupada en este horario.');
+        }
 
-        // Registrar bitácora
-        registrarBitacora(Auth::user(), 'Crear HorarioMateria', $request,
-            "Se asignó horario al grupo_materia_id {$horarioMateria->grupo_materia_id}, horario_id {$horarioMateria->horario_id}, aula {$horarioMateria->nro}."
-        );
+        HorarioMateria::create($request->all());
 
         return redirect()->route('admin.horario_materia.index')
             ->with('success', 'Horario asignado correctamente.');
@@ -67,66 +71,74 @@ class HorarioMateriaController extends Controller
             'nro' => 'required|exists:aulas,nro',
         ]);
 
-        if ($this->docenteTieneConflicto($request->grupo_materia_id, $request->horario_id, $horario_materium->id)) {
-            return back()->with('error', '⚠️ El docente ya tiene una materia en ese día y hora.');
+        $gm = GrupoMateria::with('docente')->find($request->grupo_materia_id);
+        $horario = Horario::find($request->horario_id);
+
+        // 1️⃣ Validar conflicto docente
+        if ($this->docenteTieneConflicto($gm->docente_registro, $horario, $horario_materium->id)) {
+            return back()->with('error', '⚠️ El docente ya tiene una materia asignada en este horario.');
         }
 
-        $anterior = $horario_materium->toArray();
+        // 2️⃣ Validar conflicto de aula
+        if ($this->aulaOcupada($request->nro, $horario, $horario_materium->id)) {
+            return back()->with('error', '⚠️ El aula ya está ocupada en este horario.');
+        }
+
         $horario_materium->update($request->all());
 
-        // Registrar bitácora
-        registrarBitacora(Auth::user(), 'Actualizar HorarioMateria', $request,
-            "Se actualizó horarioMateria ID {$horario_materium->id} de grupo_materia_id {$anterior['grupo_materia_id']}, horario_id {$anterior['horario_id']}, aula {$anterior['nro']} a grupo_materia_id {$horario_materium->grupo_materia_id}, horario_id {$horario_materium->horario_id}, aula {$horario_materium->nro}."
-        );
-
         return redirect()->route('admin.horario_materia.index')
-            ->with('success', 'Horario actualizado.');
+            ->with('success', 'Horario actualizado correctamente.');
     }
 
     public function destroy(HorarioMateria $horario_materium)
     {
-        // Registrar bitácora
-        registrarBitacora(Auth::user(), 'Eliminar HorarioMateria', request(),
-            "Se eliminó horarioMateria ID {$horario_materium->id}, grupo_materia_id {$horario_materium->grupo_materia_id}, horario_id {$horario_materium->horario_id}, aula {$horario_materium->nro}."
-        );
-
         $horario_materium->delete();
 
         return redirect()->route('admin.horario_materia.index')
             ->with('success', 'Horario eliminado.');
     }
 
-    /**
-     * Verifica si el docente ya tiene un horario asignado en el mismo día y hora
-     */
-    private function docenteTieneConflicto($grupo_materia_id, $horario_id, $ignorarId = null)
+
+    /* ─────────────────────────────────────────────── */
+    /* VALIDACIONES                                    */
+    /* ─────────────────────────────────────────────── */
+
+    private function docenteTieneConflicto($docenteRegistro, $horario, $ignorarId = null)
     {
-        $gm = GrupoMateria::find($grupo_materia_id);
-        if (!$gm) return false;
-
-        $docente = $gm->docente_registro;
-        $horario = Horario::find($horario_id);
-        if (!$horario) return false;
-
-        $query = HorarioMateria::whereHas('grupoMateria', function ($q) use ($docente) {
-                $q->where('docente_registro', $docente);
-            })
-            ->whereHas('horario', function ($q) use ($horario) {
-                $q->where('dia', $horario->dia)
-                  ->where(function($q2) use ($horario) {
-                      $q2->whereBetween('hora_inicio', [$horario->hora_inicio, $horario->hora_fin])
-                         ->orWhereBetween('hora_fin', [$horario->hora_inicio, $horario->hora_fin])
-                         ->orWhere(function($q3) use ($horario) {
-                             $q3->where('hora_inicio', '<=', $horario->hora_inicio)
-                                ->where('hora_fin', '>=', $horario->hora_fin);
-                         });
-                  });
-            });
-
-        if ($ignorarId) {
-            $query->where('id', '!=', $ignorarId);
-        }
-
-        return $query->exists();
+        return HorarioMateria::whereHas('grupoMateria', function($q) use ($docenteRegistro) {
+                    $q->where('docente_registro', $docenteRegistro);
+                })
+                ->whereHas('horario', function($q) use ($horario) {
+                    $q->where('dia', $horario->dia)
+                      ->where(function($q2) use ($horario) {
+                        $q2->whereBetween('hora_inicio', [$horario->hora_inicio, $horario->hora_fin])
+                           ->orWhereBetween('hora_fin', [$horario->hora_inicio, $horario->hora_fin])
+                           ->orWhere(function($q3) use ($horario) {
+                               $q3->where('hora_inicio', '<=', $horario->hora_inicio)
+                                  ->where('hora_fin', '>=', $horario->hora_fin);
+                           });
+                      });
+                })
+                ->when($ignorarId, fn($q) => $q->where('id', '!=', $ignorarId))
+                ->exists();
     }
+
+    private function aulaOcupada($aulaNro, $horario, $ignorarId = null)
+    {
+        return HorarioMateria::where('nro', $aulaNro)
+                ->whereHas('horario', function($q) use ($horario) {
+                    $q->where('dia', $horario->dia)
+                      ->where(function($q2) use ($horario) {
+                        $q2->whereBetween('hora_inicio', [$horario->hora_inicio, $horario->hora_fin])
+                           ->orWhereBetween('hora_fin', [$horario->hora_inicio, $horario->hora_fin])
+                           ->orWhere(function($q3) use ($horario) {
+                               $q3->where('hora_inicio', '<=', $horario->hora_inicio)
+                                  ->where('hora_fin', '>=', $horario->hora_fin);
+                           });
+                      });
+                })
+                ->when($ignorarId, fn($q) => $q->where('id', '!=', $ignorarId))
+                ->exists();
+    }
+
 }

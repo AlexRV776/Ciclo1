@@ -148,6 +148,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/asistencia/gestionar', [AsistenciaController::class, 'filtrar'])->name('asistencia.filtrar');
 });
 
+
 use App\Http\Controllers\PerfilController;
 
 Route::middleware('auth')->group(function () {

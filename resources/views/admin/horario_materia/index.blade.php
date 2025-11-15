@@ -33,6 +33,7 @@
                 <td class="p-2">{{ $h->aula->nro }}</td>
 
                 <td class="p-2 flex gap-2">
+                @if(Auth::user()->rol_id == 1)
                     <a href="{{ route('admin.horario_materia.edit', $h->id) }}" 
                         class="bg-yellow-500 text-white px-3 py-1 rounded">Editar</a>
 
@@ -43,6 +44,7 @@
                             Eliminar
                         </button>
                     </form>
+                @endif
                 </td>
             </tr>
             @endforeach
