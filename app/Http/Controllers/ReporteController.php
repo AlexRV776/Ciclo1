@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Usuario;
 use App\Models\Asistencia;
 use App\Models\Docente;
+use App\Models\Grupo;
+use App\Models\Materia;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
@@ -64,10 +66,31 @@ class ReporteController extends Controller
         return view('admin.reportes.asistencia', compact('docentes'));
     }
 
+    public function grupos()
+    {
+        return view('admin.reportes.grupos');
+    }
+
+    public function exportGrupos(Request $request)
+    {
+        $tipo = $request->input('tipo');
+        $grupos = Grupo::orderBy('id')->get();
+
+        if ($tipo === 'pdf') {
+            $pdf = PDF::loadView('admin.reportes.grupos_pdf', compact('grupos'));
+            return $pdf->download('reporte_grupos.pdf');
+        }
+
+        if ($tipo === 'excel') {
+            return Excel::download(new \App\Exports\GruposExport($grupos), 'reporte_grupos.xlsx');
+        }
+
+        return back()->with('error', 'Tipo de reporte no válido');
+    }
+
     public function exportAsistencia(Request $request)
     {
         $tipo = $request->input('tipo');
-
         $query = Asistencia::with(['docente.usuario', 'horarioMateria.grupoMateria.materia'])
             ->orderBy('fecha', 'desc');
 
@@ -96,6 +119,37 @@ class ReporteController extends Controller
                 'reporte_asistencia.xlsx'
             );
         }
+
+        return back()->with('error', 'Tipo de reporte no válido');
+    }
+
+    public function materias()
+    {
+        $semestres = Materia::select('semestre')->distinct()->orderBy('semestre')->get();
+        return view('admin.reportes.materias', compact('semestres'));
+    }
+
+
+    public function exportMaterias(Request $request)
+    {
+        $tipo = $request->input('tipo');
+        $query = Materia::query()->orderBy('sigla');
+
+        if ($request->semestre) {
+            $query->where('semestre', $request->semestre);
+        }
+
+        $materias = $query->get();
+
+        if ($tipo === 'pdf') {
+            $pdf = PDF::loadView('admin.reportes.materias_pdf', compact('materias'));
+            return $pdf->download('reporte_materias.pdf');
+        }
+
+        if ($tipo === 'excel') {
+            return Excel::download(new \App\Exports\MateriasExport($materias), 'reporte_materias.xlsx');
+        }
+
 
         return back()->with('error', 'Tipo de reporte no válido');
     }

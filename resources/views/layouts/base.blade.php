@@ -193,7 +193,7 @@
             {{-- ✅ PERMISO: ver_reportes --}}
             @if(Auth::user()->rol->permisos->contains('nombre', 'ver_reportes'))
                 <a href="{{ route('admin.reportes.index') }}" class="block py-2 px-3 rounded-lg hover:bg-gray-800">
-                    📄 Lista de Reportes
+                    📊 Panel de Reportes
                 </a>
             @endif
 

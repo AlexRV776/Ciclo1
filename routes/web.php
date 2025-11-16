@@ -194,6 +194,20 @@ Route::middleware(['auth'])->group(function () {
         
     Route::post('/admin/reportes/asistencia/export', [App\Http\Controllers\ReporteController::class, 'exportAsistencia'])
         ->name('admin.reportes.asistencia.export');
+
+    Route::get('admin/reportes/grupos', [App\Http\Controllers\ReporteController::class, 'grupos'])
+        ->name('admin.reportes.grupos');
+
+    Route::post('admin/reportes/grupos/export', [App\Http\Controllers\ReporteController::class, 'exportGrupos'])
+        ->name('admin.reportes.grupos.export');
+
+    Route::get('/admin/reportes/materias', [App\Http\Controllers\ReporteController::class, 'materias'])
+        ->name('admin.reportes.materias');
+
+    Route::post('/admin/reportes/materias/export', [App\Http\Controllers\ReporteController::class, 'exportMaterias'])
+        ->name('admin.reportes.materias.export');
+
+
 });
 use App\Http\Controllers\Admin\UsuarioImportController;
 

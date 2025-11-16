@@ -87,19 +87,30 @@ class AsistenciaController extends Controller
         ])->orderBy('fecha', 'desc')->orderBy('estado', 'asc');
 
         // filtros opcionales (usamos GET-friendly params)
-        $fecha = $request->query('fecha');
+        $fecha_desde = $request->query('fecha_desde');
+        $fecha_hasta = $request->query('fecha_hasta');
         $registro = $request->query('registro'); // busca por docente_registro
         $materia_sigla = $request->query('materia_sigla');
 
-        if ($fecha) {
+        if ($fecha_desde) {
             // validar formato básico YYYY-MM-DD (no abortamos, solo ignoramos si inválido)
             try {
-                $d = Carbon::parse($fecha)->toDateString();
-                $query->where('fecha', $d);
+                $d = Carbon::parse($fecha_desde)->toDateString();
+                $query->where('fecha', '>=', $d);
             } catch (\Throwable $e) {
                 // ignorar el filtro si fecha inválida
             }
         }
+
+        if ($fecha_hasta) {
+            try {
+                $h = Carbon::parse($fecha_hasta)->toDateString();
+                $query->where('fecha', '<=', $h);
+            } catch (\Throwable $e) {
+                //ignorar el filtro si fecha inválida
+            }
+        }
+
 
         if ($registro) {
             $query->where('docente_registro', $registro);
@@ -115,7 +126,14 @@ class AsistenciaController extends Controller
         // obtener resultados (para sets grandes podrías paginar -> ->paginate(30))
         $asistencias = $query->get();
 
-        return view('asistencia.gestionar', compact('asistencias', 'materias', 'fecha', 'registro', 'materia_sigla'));
+        return view('asistencia.gestionar', compact(
+            'asistencias', 
+            'materias',  
+            'registro', 
+            'materia_sigla',
+            'fecha_desde',
+            'fecha_hasta'
+        ));
     }
 
     public function filtrar(Request $request)

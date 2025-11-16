@@ -10,9 +10,15 @@
     {{-- Formulario GET para filtrar --}}
     <form action="{{ route('asistencia.gestionar') }}" method="GET" class="mb-6 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
         <div>
-            <label class="block text-sm font-semibold">Fecha</label>
-            <input type="date" name="fecha" value="{{ $fecha ?? '' }}" class="mt-1 block w-full border rounded p-2" />
+            <label class="block text-sm font-semibold">Fecha desde</label>
+            <input type="date" name="fecha_desde" value="{{ $fecha_desde ?? '' }}" class="mt-1 block w-full border rounded p-2" />
         </div>
+
+        <div>
+            <label class="block text-sm font-semibold">Fecha hasta</label>
+            <input type="date" name="fecha_hasta" value="{{ $fecha_hasta ?? '' }}" class="mt-1 block w-full border rounded p-2" />
+        </div>
+
 
         <div>
             <label class="block text-sm font-semibold">Registro docente</label>

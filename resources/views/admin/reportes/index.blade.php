@@ -22,6 +22,18 @@
             🕓 Reporte de Asistencia
         </a>
 
+        {{-- Botón: Reporte de grupos --}}
+        <a href="{{ route('admin.reportes.grupos') }}" 
+           class="block p-6 bg-yellow-500 text-white font-bold text-center rounded-xl shadow hover:bg-yellow-600 transition">
+            👥 Reporte de Grupos
+        </a>
+
+        {{-- Botón: Reporte de materias --}}
+        <a href="{{ route('admin.reportes.materias') }}" 
+           class="block p-6 bg-red-500 text-white font-bold text-center rounded-xl shadow hover:bg-red-600 transition">
+            📘 Reporte de Materias
+        </a>
+
     </div>
 
 </div>
